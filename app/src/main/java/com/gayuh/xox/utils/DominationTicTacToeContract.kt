@@ -1,6 +1,6 @@
 package com.gayuh.xox.utils
 
-const val DOMINATION_CELL_NUMBER = 3
+const val DOMINATION_CELL_NUMBER = 6
 const val DOMINATION_LOOP_LIMITATION = (DOMINATION_CELL_NUMBER - 2)
 
 enum class DominationCell { EMPTY, X, O }
