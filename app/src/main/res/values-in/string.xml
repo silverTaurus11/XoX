@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">XoX</string>
+    <string name="title">XoX</string>
+    <string name="choose_mode">Pilih Mode</string>
+    <string name="player_vs_player">Pemain vs Pemain</string>
+    <string name="player_vs_ai">Pemain vs AI</string>
+    <string name="domination">Dominasi</string>
+    <string name="turn">Giliran: %1$s</string>
+    <string name="winner">Pemenang: %1$s</string>
+    <string name="draw">Seri!</string>
+    <string name="restart">Ulangi</string>
+    <string name="language">Bahasa</string>
+</resources>

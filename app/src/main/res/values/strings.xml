@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">XoX</string>
+    <string name="title">XoX</string>
+    <string name="choose_mode">Choose Mode</string>
+    <string name="player_vs_player">Player vs Player</string>
+    <string name="player_vs_ai">Player vs AI</string>
+    <string name="domination">Domination</string>
+    <string name="turn">Turn: %1$s</string>
+    <string name="winner">Winner: %1$s</string>
+    <string name="draw">It\'s a Draw!</string>
+    <string name="restart">Restart</string>
+    <string name="language">Language</string>
+</resources>
