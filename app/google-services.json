@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "966740991803",
+    "project_id": "gayuh-x0x",
+    "storage_bucket": "gayuh-x0x.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966740991803:android:05436dbe0de18a844e611e",
+        "android_client_info": {
+          "package_name": "com.gayuh.xox"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1-kHmIJTHBFm9FQlfccfgVpaNKuC9PvI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
