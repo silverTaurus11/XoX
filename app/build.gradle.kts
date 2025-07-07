@@ -1,3 +1,4 @@
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 
 plugins {
     alias(libs.plugins.android.application)
@@ -30,6 +31,14 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isMinifyEnabled = false
+            firebaseAppDistribution {
+                artifactType = "APK"
+                releaseNotes = "Internal debug build"
+                groups = "gayuh-internal"
+            }
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -40,18 +49,6 @@ android {
     }
     buildFeatures {
         compose = true
-    }
-}
-
-androidComponents {
-    onVariants { variant ->
-        if (variant.name == "debug") {
-            firebaseAppDistribution {
-                artifactType = "APK"
-                releaseNotes = "Internal debug build"
-                testers = "gayuhnh@gmail.com"
-            }
-        }
     }
 }
 
