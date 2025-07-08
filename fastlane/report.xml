@@ -5,17 +5,37 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000211">
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000215">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: assembleDebug" time="1.10124">
+      <testcase classname="fastlane.lanes" name="1: assembleDebug" time="1.065769">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: firebase_app_distribution" time="16.686337">
+      <testcase classname="fastlane.lanes" name="2: changelog_from_git_commits" time="0.014907">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="3: get_xcconfig_value" time="0.000446">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="4: git_branch" time="0.012185">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="5: firebase_app_distribution" time="16.555128">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="6: get_xcconfig_value" time="0.000237">
         
       </testcase>
     

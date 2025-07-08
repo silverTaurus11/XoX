@@ -23,18 +23,13 @@ platform :android do
 
       gradle(task: "assembleDebug")
 
-      firebase_app_distribution(
-        app: ENV['FIREBASE_APP_ID'],
-        groups: "gayuh-internal",
-        debug: true,
-        firebase_cli_token: ENV['FIREBASE_CI_TOKEN'],
-        release_notes: "Automated Debug Build via GitHub Actions",
-        apk_path: "app/build/outputs/apk/debug/app-debug.apk"
-      )
+      release_notes = generate_release_note()
 
-      send_telegram_message("✅ build_debug", nil)
+      distribute_app_distribution_debug("app/build/outputs/apk/debug/app-debug.apk", release_notes)
+
+      send_telegram_message(":: XoX Debug", nil)
     rescue => e
-      send_telegram_message("❌ build_debug", e)
+      send_telegram_message(":: Xox Debug", e)
       raise e
     ensure
       File.delete(decrypted_env_path) if File.exist?(decrypted_env_path)
@@ -42,21 +37,37 @@ platform :android do
   end
 end
 
+def distribute_app_distribution_debug(appPath, release_notes)
+    firebase_app_distribution(
+        app: ENV['FIREBASE_APP_ID'],
+        groups: "gayuh-internal",
+        debug: true,
+        apk_path: appPath,
+        firebase_cli_token: ENV['FIREBASE_CI_TOKEN'],
+        release_notes: release_notes,
+    )
+end
 
 def send_telegram_message(lane, exception)
-  version = Time.now.strftime("%Y.%m.%d.%H%M")
+  version = get_xcconfig_value(
+      path: 'fastlane/config/release.xconfig',
+      name: 'VERSION'
+    )
   branch = `git rev-parse --abbrev-ref HEAD`.strip
   changelog = `git log -5 --pretty=format:'- [%h] %s (%an)'`
 
   status = exception.nil? ? "✅ *SUCCESS*" : "❌ *FAILED*"
   timestamp = Time.now.strftime("%d %B %Y %H:%M:%S")
 
+  firebase_link = "https://appdistribution.firebase.dev/i/#{ENV['FIREBASE_APP_ID']}"
+
   message = <<~MSG
     #{status} _#{lane}_
 
     🔀 *Branch:* `#{branch}`
-    📦 *Version:* #{version}
-    ⏱ *Time:* #{timestamp}
+    🧰 *Version:* #{version}
+    ⏱  *Time:* #{timestamp}
+    📦 *Firebase Tester Link:* #{ENV['FIREBASE_MOBILE_TESTER']}
     🌱 *Changelog:*
     #{changelog}
   MSG
@@ -72,5 +83,30 @@ def send_telegram_message(lane, exception)
     "text" => message,
     "parse_mode" => "Markdown"
   })
+end
+
+def generate_release_note()
+  changelog_from_git_commits(
+    commits_count: 5,
+    pretty: "- [%h] %s (%an)",
+    date_format: "short",
+    match_lightweight_tag: false,
+    merge_commit_filtering: "exclude_merges"
+  )
+
+  version = get_xcconfig_value(
+    path: 'fastlane/config/release.xconfig',
+    name: 'VERSION'
+  )
+
+  filename = "Android #{lane_context[SharedValues::GRADLE_FLAVOR]} - #{version}"
+
+  return <<~NOTE
+    Branch: #{git_branch}
+    Version: #{filename}
+
+    Changelog:
+    #{lane_context[SharedValues::FL_CHANGELOG]}
+  NOTE
 end
 
