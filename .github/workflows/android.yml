@@ -33,15 +33,11 @@ jobs:
         run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
 
       - name: Decrypt .env.enc to .env
-        env:
-          FASTLANE_SECRET_KEY: ${{ secrets.MY_SALT }}
         run: |
-          openssl aes-256-cbc -d -in fastlane/.env.enc -out fastlane/.env.tmp -pass pass:FASTLANE_SECRET_KEY
+          openssl aes-256-cbc -pbkdf2 -d -in fastlane/.env.enc -out fastlane/.env.tmp -pass pass:${{ secrets.MY_SALT }}
 
       - name: Run Fastlane (build and upload debug)
-        env:
-          FASTLANE_SECRET_KEY: ${{ secrets.MY_SALT }}
-        run: bundle exec fastlane android build_debug key:$FASTLANE_SECRET_KEY
+        run: bundle exec fastlane android build_debug key:${{ secrets.MY_SALT }}
 
       - name: Clean decrypted .env
         run: rm -f .env.tmp

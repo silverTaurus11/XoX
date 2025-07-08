@@ -9,12 +9,14 @@ platform :android do
   desc "Build and upload Debug APK to Firebase App Distribution"
   lane :build_debug do |options|
     encryption_key = options[:key]
-    UI.user_error!("Missing key") unless encryption_key
+    UI.user_error!("Missing encryption key. Use: fastlane android build_debug key:your_secret") unless encryption_key
 
-    # Dekripsi .env terenkripsi
     decrypted_env_path = ".env.tmp"
-    system("openssl aes-256-cbc -d -in .env.enc -out #{decrypted_env_path} -pass pass:#{encryption_key}")
-    UI.user_error!("Failed to decrypt .env.enc") unless $?.success?
+    encrypted_env_path = ".env.enc"
+
+    # Dekripsi file .env.enc
+    system("openssl aes-256-cbc -pbkdf2 -d -in #{encrypted_env_path} -out #{decrypted_env_path} -pass pass:#{encryption_key}")
+    UI.user_error!("Failed to decrypt #{encrypted_env_path}") unless $?.success?
 
     begin
       Dotenv.load(decrypted_env_path)
@@ -30,15 +32,16 @@ platform :android do
         apk_path: "app/build/outputs/apk/debug/app-debug.apk"
       )
 
-      send_telegram_message("build_debug", nil)
+      send_telegram_message("✅ build_debug", nil)
     rescue => e
-      send_telegram_message("build_debug", e)
+      send_telegram_message("❌ build_debug", e)
       raise e
     ensure
       File.delete(decrypted_env_path) if File.exist?(decrypted_env_path)
     end
   end
 end
+
 
 def send_telegram_message(lane, exception)
   version = Time.now.strftime("%Y.%m.%d.%H%M")
