@@ -19,3 +19,4 @@ local.properties
 .idea/gradle.xml
 Gemfile.lock
 pglite-debug.log
+fastlane/report.xml
