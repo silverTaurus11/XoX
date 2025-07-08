@@ -7,25 +7,36 @@ default_platform(:android)
 
 platform :android do
   desc "Build and upload Debug APK to Firebase App Distribution"
-  lane :build_debug do
-    # Load .env
-    Dotenv.load('.env')
+  lane :build_debug do |options|
+    encryption_key = options[:key]
+    UI.user_error!("Missing key") unless encryption_key
 
-    # Build APK
-    gradle(task: "assembleDebug")
+    # Dekripsi .env terenkripsi
+    decrypted_env_path = ".env.tmp"
+    system("openssl aes-256-cbc -d -in .env.enc -out #{decrypted_env_path} -pass pass:#{encryption_key}")
+    UI.user_error!("Failed to decrypt .env.enc") unless $?.success?
 
-    # Upload to Firebase
-    firebase_app_distribution(
-      app: ENV['FIREBASE_APP_ID'],
-      groups: "gayuh-internal", # ganti sesuai tester group kamu
-      debug: true,
-      firebase_cli_token: ENV['FIREBASE_CI_TOKEN'],
-      release_notes: "Automated Debug Build via GitHub Actions",
-      apk_path: "app/build/outputs/apk/debug/app-debug.apk"
-    )
+    begin
+      Dotenv.load(decrypted_env_path)
 
-    # Notify
-    send_telegram_message("build_debug", nil)
+      gradle(task: "assembleDebug")
+
+      firebase_app_distribution(
+        app: ENV['FIREBASE_APP_ID'],
+        groups: "gayuh-internal",
+        debug: true,
+        firebase_cli_token: ENV['FIREBASE_CI_TOKEN'],
+        release_notes: "Automated Debug Build via GitHub Actions",
+        apk_path: "app/build/outputs/apk/debug/app-debug.apk"
+      )
+
+      send_telegram_message("build_debug", nil)
+    rescue => e
+      send_telegram_message("build_debug", e)
+      raise e
+    ensure
+      File.delete(decrypted_env_path) if File.exist?(decrypted_env_path)
+    end
   end
 end
 
@@ -34,23 +45,29 @@ def send_telegram_message(lane, exception)
   branch = `git rev-parse --abbrev-ref HEAD`.strip
   changelog = `git log -5 --pretty=format:'- [%h] %s (%an)'`
 
-  status = exception.nil? ? "✅ SUCCESS" : "❌ FAILED"
+  status = exception.nil? ? "✅ *SUCCESS*" : "❌ *FAILED*"
   timestamp = Time.now.strftime("%d %B %Y %H:%M:%S")
 
   message = <<~MSG
-    #{status} *#{lane}*
+    #{status} _#{lane}_
 
-    🔀 Branch: `#{branch}`
-    📦 Version: #{version}
-    ⏱ Time: #{timestamp}
-    🌱 Changelog:
+    🔀 *Branch:* `#{branch}`
+    📦 *Version:* #{version}
+    ⏱ *Time:* #{timestamp}
+    🌱 *Changelog:*
     #{changelog}
   MSG
 
+  if exception
+    message += "\n\n🚨 *Error:*\n```#{exception.message}```"
+  end
+
   uri = URI("https://api.telegram.org/bot#{ENV['TELEGRAM_TOKEN']}/sendMessage")
+
   Net::HTTP.post_form(uri, {
     "chat_id" => ENV['TELEGRAM_CHAT_ID'],
     "text" => message,
     "parse_mode" => "Markdown"
   })
 end
+
