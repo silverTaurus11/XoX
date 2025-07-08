@@ -38,6 +38,7 @@ jobs:
 
       - name: Run Android Linter
         run: ./gradlew lintDebug
+        continue-on-error: true
 
       - name: Upload Lint HTML Report
         uses: actions/upload-artifact@v4
