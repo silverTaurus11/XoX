@@ -3,36 +3,41 @@ name: Distribute Debug Build
 on:
   push:
     branches:
-      - main  # atau cabang lain yang kamu pakai
+      - main  # ganti sesuai branch yang kamu mau
 
 jobs:
-  distribute-debug:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'  # atau 3.x terbaru
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install
 
       - name: Decode google-services.json
         run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
 
-      - name: Set Firebase token
-        run: echo "FIREBASE_TOKEN=${{ secrets.FIREBASE_TOKEN }}" >> $GITHUB_ENV
+      - name: Set ENV for Firebase + Telegram
+        run: |
+          echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> .env
+          echo "FIREBASE_CI_TOKEN=${{ secrets.FIREBASE_CI_TOKEN }}" >> .env
+          echo "TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}" >> .env
+          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug
-
-      - name: Upload Debug APK to Firebase App Distribution
-        run: ./gradlew appDistributionUploadDebug
+      - name: Run Fastlane (build and upload APK)
+        run: bundle exec fastlane android build_debug

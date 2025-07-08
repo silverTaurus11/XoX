@@ -1,0 +1,56 @@
+require 'dotenv'
+require 'json'
+require 'net/http'
+require 'uri'
+
+default_platform(:android)
+
+platform :android do
+  desc "Build and upload Debug APK to Firebase App Distribution"
+  lane :build_debug do
+    # Load .env
+    Dotenv.load('.env')
+
+    # Build APK
+    gradle(task: "assembleDebug")
+
+    # Upload to Firebase
+    firebase_app_distribution(
+      app: ENV['FIREBASE_APP_ID'],
+      groups: "gayuh-internal", # ganti sesuai tester group kamu
+      debug: true,
+      firebase_cli_token: ENV['FIREBASE_CI_TOKEN'],
+      release_notes: "Automated Debug Build via GitHub Actions",
+      apk_path: "app/build/outputs/apk/debug/app-debug.apk"
+    )
+
+    # Notify
+    send_telegram_message("build_debug", nil)
+  end
+end
+
+def send_telegram_message(lane, exception)
+  version = Time.now.strftime("%Y.%m.%d.%H%M")
+  branch = `git rev-parse --abbrev-ref HEAD`.strip
+  changelog = `git log -5 --pretty=format:'- [%h] %s (%an)'`
+
+  status = exception.nil? ? "✅ SUCCESS" : "❌ FAILED"
+  timestamp = Time.now.strftime("%d %B %Y %H:%M:%S")
+
+  message = <<~MSG
+    #{status} *#{lane}*
+
+    🔀 Branch: `#{branch}`
+    📦 Version: #{version}
+    ⏱ Time: #{timestamp}
+    🌱 Changelog:
+    #{changelog}
+  MSG
+
+  uri = URI("https://api.telegram.org/bot#{ENV['TELEGRAM_TOKEN']}/sendMessage")
+  Net::HTTP.post_form(uri, {
+    "chat_id" => ENV['TELEGRAM_CHAT_ID'],
+    "text" => message,
+    "parse_mode" => "Markdown"
+  })
+end

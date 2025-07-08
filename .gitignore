@@ -15,3 +15,7 @@
 local.properties
 .idea
 .kotlin
+.bundle
+.idea/gradle.xml
+Gemfile.lock
+pglite-debug.log
