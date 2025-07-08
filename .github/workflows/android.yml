@@ -36,7 +36,7 @@ jobs:
         env:
           FASTLANE_SECRET_KEY: ${{ secrets.MY_SALT }}
         run: |
-          openssl aes-256-cbc -d -in .env.enc -out .env.tmp -pass pass:FASTLANE_SECRET_KEY
+          openssl aes-256-cbc -d -in fastlane/.env.enc -out fastlane/.env.tmp -pass pass:FASTLANE_SECRET_KEY
 
       - name: Run Fastlane (build and upload debug)
         env:
