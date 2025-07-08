@@ -36,6 +36,15 @@ jobs:
         run: |
           openssl aes-256-cbc -pbkdf2 -d -in fastlane/.env.enc -out fastlane/.env.tmp -pass pass:${{ secrets.MY_SALT }}
 
+      - name: Run Android Linter
+        run: ./gradlew lintDebug
+
+      - name: Upload Lint HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html
+
       - name: Run Fastlane (build and upload debug)
         run: bundle exec fastlane android build_debug key:${{ secrets.MY_SALT }}
 

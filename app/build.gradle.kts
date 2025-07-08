@@ -50,6 +50,12 @@ android {
     buildFeatures {
         compose = true
     }
+    lint {
+        baseline = file("build/reports/lint-results-debug.html")
+        abortOnError = true
+        warningsAsErrors = true
+        checkReleaseBuilds = false
+    }
 }
 
 dependencies {
